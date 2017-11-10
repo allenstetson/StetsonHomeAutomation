@@ -26,6 +26,7 @@ v AudioPanel
 #  =============================================================================
 # stdlib
 import json
+import os
 import requests
 import sys
 
@@ -148,7 +149,11 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         button = StetsonHomeAutomation.widgets.ImageButton()
         button.text = text
         button.id = id
-        button.source = image
+        customImage = 'resource/icons/custom/{}.png'.format(button.id)
+        if os.path.exists(customImage):
+            button.source = customImage
+        else:
+            button.source = image
         button.bind(on_press=self._blinkButton)
         button.bind(on_release=self._handleAudioSourcePressed)
         _btn_layout = BoxLayout(orientation='vertical')
