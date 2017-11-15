@@ -8,9 +8,10 @@ import sys
 
 # StetsonHomeAutomation imports
 sys.path.insert(0, '..')
-import StetsonHomeAutomation.lights
 import StetsonHomeAutomation.audio
 import StetsonHomeAutomation.config
+import StetsonHomeAutomation.lights
+import StetsonHomeAutomation.widgets
 
 # Kivy imports
 import kivy
@@ -52,37 +53,7 @@ WEBROOT = "http://localhost:8082/"
 # =============================================================================
 # Classes
 # =============================================================================
-class ImageButton(ButtonBehavior, Image):
-    pass
-
-class GridLayoutWithBg(GridLayout):
-    def __init__(self, **kwargs):
-        super(GridLayoutWithBg, self).__init__(**kwargs)
-        with self.canvas.before:
-            Color(0, 0, 0, 1)
-            self.rect = Rectangle(size=self.size, pos=self.pos)
-        self.bind(pos=self.update_rect, size=self.update_rect)
-
-    def update_rect(self, instance, value):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
-
-
-class AccordionWithBg(Accordion):
-    def __init__(self, **kwargs):
-        super(AccordionWithBg, self).__init__(**kwargs)
-        with self.canvas.before:
-            Color(0, 0, 0, 1)
-            self.rect = Rectangle(size=self.size, pos=self.pos)
-        self.bind(pos=self.update_rect, size=self.update_rect)
-
-    def update_rect(self, instance, value):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
-
-
-
-class MessagingPanel(GridLayoutWithBg):
+class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
         super(MessagingPanel, self).__init__(**kwargs)
         self.cols = 1
@@ -93,13 +64,21 @@ class CarouselInterface(Carousel):
     def __init__(self, **kwargs):
         super(CarouselInterface, self).__init__(**kwargs)
         self.statusBar = STATUS_BAR
-        self.add_widget(StetsonHomeAutomation.config.ConfigScreen(transition=RiseInTransition()))
+
+        #Widgets
         self.audioPanel = StetsonHomeAutomation.audio.AudioPanel(self)
-        self.add_widget(self.audioPanel)
+        self.configPanel = StetsonHomeAutomation.config.ConfigScreenManager(
+            transition=RiseInTransition())
         self.lightPanel = StetsonHomeAutomation.lights.LightPanel(self)
+
+        #Layouts
+        self.add_widget(self.configPanel)
+        self.add_widget(self.audioPanel)
         self.add_widget(self.lightPanel)
         self.add_widget(MessagingPanel())
         self.index = 1
+        self.configPanel.current = "configSplash"
+
 
     def on_index(self, inst, pos):
         super(CarouselInterface, self).on_index(inst, pos)
@@ -123,26 +102,13 @@ class MainDisplay(GridLayout):
         self.add_widget(CarouselInterface())
 
 
-class MainScreen(Screen):
-    def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(**kwargs)
-        self.add_widget(MainDisplay(self))
-
-
 class ParentalSettingsScreen(Screen):
     def __init__(self, name=None, **kwargs):
         super(ParentalSettingsScreen, self).__init__(**kwargs)
         self.add_widget(Label(text="Settings go here"))
 
 
-class MessagingPanelLo(GridLayoutWithBg):
-    def __init__(self, **kwargs):
-        super(MessagingPanelLo, self).__init__(**kwargs)
-        self.cols = 1
-        self.add_widget(Label(text="Messaging is currently disabled."))
-
-
-class MyBetterApp(App):
+class ShaApp(App):
     def build(self):
         self.title="StetsonHomeAutomation"
         return MainDisplay()
@@ -150,5 +116,5 @@ class MyBetterApp(App):
 
 # =============================================================================
 if __name__ == "__main__":
-    app = MyBetterApp()
+    app = ShaApp()
     app.run()

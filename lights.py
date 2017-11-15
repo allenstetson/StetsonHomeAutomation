@@ -26,24 +26,8 @@ from kivy.uix.colorpicker import ColorPicker
 # =============================================================================
 # Globals
 # =============================================================================
-with open('c:/Users/allen/lifxToken.txt', 'r') as fh:
-    _token = fh.read()
-LIFX_TOKEN = _token.strip()
 STATUS_BAR = Label(text="Problem detected.", size_hint=(1, .1))
-HEADERS = {"Authorization": "Bearer %s" % LIFX_TOKEN}
-
-'''
-response = requests.get('https://api.lifx.com/v1/lights/all', headers=HEADERS)
-lights = response.json()
-
-for light in lights:
-    print(light['label'])
-    if "Room 2" in light['label']:
-        leftLight = light
-        mylight = light
-    if "Room  1" in light['label']:
-        rightLight = light
-'''
+WEBROOT = "http://localhost:8082/"
 
 # =============================================================================
 # Functions
@@ -75,8 +59,11 @@ class LightStateTracker(object):
     def LoadInitialLightStates(self):
         # Lights/Groups
         try:
-            response = requests.get('https://api.lifx.com/v1/lights/all', headers=HEADERS)
-            self.lights = response.json()
+            response = requests.get(WEBROOT+"get/lifx/lights/all")
+            if response.status_code == requests.codes.ok:
+                self.lights = response.json()
+            else:
+                raise NetworkError("Cannot get light data: {}".format(response.status_code))
             for light in self.lights:
                 if light['connected'] and light['power'] == "on":
                     self.activeLights.append(light['label'])
@@ -92,10 +79,9 @@ class LightStateTracker(object):
 
         # Scenes
         try:
-            response = requests.get('https://api.lifx.com/v1/scenes', headers=HEADERS)
-            self.scenes = response.json()
+            self.scenes = requests.get(WEBROOT+"get/lifx/scenes").json()
         except requests.exceptions.ConnectionError:
-            self.caller.statusBar.text = "Error connecting to internet - check modem health!"
+            self.caller.statusBar.text = "Error connecting to server.!"
 
     def UpdateLightsStatus(self):
         if not self.activeLights:
@@ -191,6 +177,7 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
 
         # Individual Lights
         for light in self.tracker.lights:
+            print("ALLEN -> {}\n\n{}".format(self.tracker.lights, light))
             _btn_layout = BoxLayout(orientation='vertical')
             btn = StetsonHomeAutomation.widgets.ImageButton()
             btn.text = light['label']
@@ -220,15 +207,14 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
 
     def handleLightPressed(self, instance):
         #Query State
-        id = instance.id
-        urlQuery = 'https://api.lifx.com/v1/lights/id:%s' % id
         try:
-            responseQuery = requests.get(urlQuery, headers=HEADERS)
+            url = WEBROOT+"get/lifx/lights/id/{}".format(instance.id)
+            responseQuery = requests.get(url)
             responseQueryData = responseQuery.json()
             light = responseQueryData[0]
             if not light['connected']:
                 instance.color = [.1, .1, .1, 1]
-                self.statusBar.text = 'Error: light "%s" is not connected.' % instance.text
+                self.statusBar.text = 'Error: light "{}" is not connected.'.format(instance.text)
                 return
             if light['power'] == 'on':
                 newPower = 'off'
@@ -244,14 +230,14 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
             data = {
                 'power': newPower,
              }
-            url = 'https://api.lifx.com/v1/lights/id:%s/state' % id
-            response = requests.put(url, data=data, headers=HEADERS)
+            url = WEBROOT+'set/lifx/lights/id:{}/state'.format(instance.id)
+            response = requests.put(url, params=data)
         except requests.exceptions.ConnectionError:
-            self.statusBar.text = "Error connecting to internet... check modem health.."
+            self.statusBar.text = "Error connecting to server."
 
     def handleGroupPressed(self, instance):
         #Query State
-        urlQuery = 'https://api.lifx.com/v1/lights/location:Grammy'
+        urlQuery = WEBROOT + 'get/lifx/location'
         responseQuery = requests.get(urlQuery, headers=HEADERS)
         responseQueryData = responseQuery.json()
 
@@ -281,7 +267,7 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         data = {
             'power': newPower,
          }
-        url = 'https://api.lifx.com/v1/lights/location:Grammy/state'
+        url = WEBROOT + 'set/lifx/location/state'
         response = requests.put(url, data=data, headers=HEADERS)
 
     def handleScenePressed(self, instance):
@@ -318,3 +304,9 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
                 button.color = [1, 1, 1, 1]
         else:
             raise ValueError("Unsupported value for power: %s" % power)
+
+#------------------------------------------------------------------------------
+
+class NetworkError(RuntimeError):
+    def __init__(self, args):
+        self.args = args
