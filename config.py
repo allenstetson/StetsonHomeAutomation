@@ -118,6 +118,36 @@ class NumericKeyboard(Widget):
         print("Key up {}".format(keycode))
 
 
+class ConfigPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
+    def __init__(self, **kwargs):
+        super(ConfigPanel, self).__init__(**kwargs)
+        self.cols = 1
+
+        self.labelTitle = Label(text="Configuration")
+        self.btnAlarms = Button(text="Alarms")
+        self.btnBack = Button(text="Back")
+        self.btnIcons = Button(text="Icons")
+        self.btnPanes = Button(text="Panes")
+        self.btnScreenSaver = Button(text="Screen Saver")
+        self.btnSystem = Button(text="System")
+
+        self.add_widget(self.labelTitle, size_hint=(1, .2))
+        self.add_widget(self.btnAlarms, size_hint=(1, .1))
+        self.add_widget(self.btnBack, size_hint=(1, .1))
+        self.add_widget(self.btnIcons, size_hint=(1, .1))
+        self.add_widget(self.btnPanes, size_hint=(1, .1))
+        self.add_widget(self.btnScreenSaver, size_hint=(1, .1))
+        self.add_widget(self.btnSystem, size_hint=(1, .1))
+
+        #Connections
+        self.backBtn.bind(on_press=self.goBack)
+
+    def goBack(self, instance):
+        self.parent.manager.transition = FallOutTransition()
+        self.parent.manager.current = "configSplash"
+        self.parent.manager.transition = RiseInTransition()
+
+
 class LoginScreen(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
