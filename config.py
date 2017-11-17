@@ -205,12 +205,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.labelIntercom = Label(text="     Intercom", size_hint=(.4, .2))
         self.labelLights = Label(text="Lights", size_hint=(.4, .2))
         self.labelMessaging = Label(text="Messaging", size_hint=(.4, .2))
-        self.swAudio = Switch(active=True)
-        self.swExtras = Switch(active=False)
-        self.swGames = Switch(active=True)
-        self.swIntercom = Switch(active=True)
-        self.swLights = Switch(active=True)
-        self.swMessaging = Switch(active=True)
+        self._setStates()
         self.btnBack = Button(text="Back", size_hint=(.4, .1))
 
         self.add_widget(self.labelTitle)
@@ -231,23 +226,50 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.add_widget(self.btnBack)
 
         #Connections
+        self.swAudible.bind(active=partial(self.switchState, 'audible'))
+        self.swExtras.bind(active=partial(self.switchState, 'extras'))
+        self.swGames.bind(active=partial(self.switchState, 'games'))
+        self.swIntercom.bind(active=partial(self.switchState, 'intercom'))
+        self.swLights.bind(active=partial(self.switchState, 'lights'))
+        self.swMessaging.bind(active=partial(self.switchState, 'messaging'))
         self.btnBack.bind(on_press=self.goBack)
+
+    def _setStates(self):
+        if self.config.data['panes']['audio']:
+            self.swAudio = Switch(active=True)
+        else:
+            self.swAudio = Switch(active=False)
+        if self.config.data['panes']['extras']:
+            self.swExtras = Switch(active=True)
+        else:
+            self.swExtras = Switch(active=False)
+        if self.config.data['panes']['games']:
+            self.swGames = Switch(active=True)
+        else:
+            self.swGames = Switch(active=False)
+        if self.config.data['panes']['intercom']:
+            self.swIntercom = Switch(active=True)
+        else:
+            self.swIntercom = Switch(active=False)
+        if self.config.data['panes']['lights']:
+            self.swLights = Switch(active=True)
+        else:
+            self.swLights = Switch(active=False)
+        if self.config.data['panes']['messaging']:
+            self.swMessaging = Switch(active=True)
+        else:
+            self.swMessaging = Switch(active=False)
 
     def goBack(self, instance):
         self.parent.manager.transition = FallOutTransition()
         self.parent.manager.current = "configScreen"
         self.parent.manager.transition = RiseInTransition()
 
-    def registerChange(self, instance):
-        self.dirty = True
-        if 'Audio' in instance.text:
-            self.localConfig.data['panes']['audio'] = self.swAudio.active()
-            if self.swAudio.active():
-                pass
-        elif 'Lights' in instance.text:
-            self.localConfig.data['panes']['lights'] = self.swAudio.active()
-        elif 'Messaging' in instance.text:
-            self.localConfig.data['panes']['messaging'] = self.swAudio.active()
+    def switchState(self, keyname, instance, value):
+        self.config.data['panes'][keyname] = value
+        self.config.write()
+        self.parent.parent.updatePanes()
+
 
 class CfgSystemPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):

@@ -124,14 +124,23 @@ class CarouselInterface(Carousel):
 
         #Layouts
         self.add_widget(self.configPanel)
-        if self.localConfig.data['panes']['audio']:
-            self.add_widget(self.audioPanel)
-        if self.localConfig.data['panes']['lights']:
-            self.add_widget(self.lightPanel)
-        if self.localConfig.data['panes']['messaging']:
-            self.add_widget(MessagingPanel())
+        self.updatePanes()
         self.index = 1
         self.configPanel.current = "configSplash"
+
+    def updatePanes(self):
+        if self.localConfig.data['panes']['audio']:
+            self.add_widget(self.audioPanel)
+        else:
+            self.remove_widget(self.audioPanel)
+        if self.localConfig.data['panes']['lights']:
+            self.add_widget(self.lightPanel)
+        else:
+            self.remove_widget(self.lightPanel)
+        if self.localConfig.data['panes']['messaging']:
+            self.add_widget(MessagingPanel())
+        else:
+            self.remove_widget((MessagingPanel))
 
 
     def on_index(self, inst, pos):
