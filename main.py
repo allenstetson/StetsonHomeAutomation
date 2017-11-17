@@ -22,21 +22,12 @@ kivy.require ('1.10.0')
 from kivy.app import App
 
 #Layouts
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.accordion import Accordion, AccordionItem
 from kivy.uix.carousel import Carousel
-from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition
-
-#Misc
-from kivy.graphics import Color, Rectangle
-from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.screenmanager import Screen, RiseInTransition
 
 #Widgets
-from kivy.uix.image import Image
 from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
 
 
 # =============================================================================
@@ -50,6 +41,67 @@ from kivy.uix.button import Button
 # =============================================================================
 # Classes
 # =============================================================================
+class ShaLocalConfig(object):
+    class __ShaLocalConfig:
+        def __init__(self):
+            #global StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
+            self.configPath = StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
+            self.data = {}
+            self.getOrCreateConfig()
+
+        def getOrCreateConfig(self):
+            if not os.path.exists(self.configPath):
+                settings = self.generateDefaults()
+                self.data = settings
+                self.write()
+            else:
+                self.read()
+
+        def read(self):
+            with open(self.configPath, 'r') as fh:
+                self.data = json.loads(fh.read())
+
+        def write(self):
+            with open(self.configPath, 'w') as fh:
+                fh.write(json.dumps(self.data))
+
+        def generateDefaults(self):
+            data = {
+                'alarms': {
+                    'audible': True,
+                    'led': False,
+                    'visual': True
+                },
+                'panes': {
+                    'audio': True,
+                    'audio:presets': True,
+                    'audio:inputs': True,
+                    'audio:outputs': True,
+                    'intercom': True,
+                    'lights': True,
+                    'lights:groups': True,
+                    'lights:scenes': True,
+                    'lights:lights': True,
+                    'lights:schedules': True,
+                    'messaging': True,
+                    'extras': True,
+                    'extras:games': True,
+                }
+            }
+            return data
+
+    instance = None
+    def __init__(self):
+        if not ShaLocalConfig.instance:
+            ShaLocalConfig.instance = ShaLocalConfig.__ShaLocalConfig()
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __setattr__(self, key, value):
+        setattr(self.instance, key, value)
+
+
 class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
         super(MessagingPanel, self).__init__(**kwargs)
@@ -60,8 +112,8 @@ class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
 class CarouselInterface(Carousel):
     def __init__(self, **kwargs):
         super(CarouselInterface, self).__init__(**kwargs)
-        global StetsonHomeAutomation.globals.LOCAL_CONFIG
-        self.localConfig = StetsonHomeAutomation.globals.LOCAL_CONFIG
+        self.localConfig = ShaLocalConfig()
+        #global StetsonHomeAutomation.globals.STATUS_BAR
         self.statusBar = StetsonHomeAutomation.globals.STATUS_BAR
 
         #Widgets
@@ -98,6 +150,7 @@ class CarouselInterface(Carousel):
 class MainDisplay(GridLayout):
     def __init__(self):
         super(MainDisplay, self).__init__()
+        #global StetsonHomeAutomation.globals.STATUS_BAR
         StetsonHomeAutomation.globals.STATUS_BAR.text="Stetson House - (XM Radio : Kitchen, Family Room, Back Yard)"
         self.cols = 1
         self.add_widget(StetsonHomeAutomation.globals.STATUS_BAR)

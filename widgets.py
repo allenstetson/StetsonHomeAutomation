@@ -16,15 +16,10 @@ from kivy.uix.behaviors import ButtonBehavior
 
 #Widgets
 from kivy.uix.image import Image
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-
-import requests
 
 # =============================================================================
 # Globals
 # =============================================================================
-STATUS_BAR = Label(text="Problem detected.", size_hint=(1, .1))
 
 # =============================================================================
 # Functions

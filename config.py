@@ -8,13 +8,14 @@ Structure
 
 Keypad in C:\Python36\lib\site-packages\kivy\data
 """
+from functools import partial
 import os
 import subprocess
 import sys
 
 # StetsonHomeAutomation imports
 sys.path.insert(0, '..')
-import StetsonHomeAutomation.globals
+import StetsonHomeAutomation.main
 import StetsonHomeAutomation.widgets
 
 from kivy.config import Config
@@ -22,10 +23,7 @@ from kivy.core.window import Window
 from kivy.uix.widget import Widget
 
 #Layouts
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.accordion import Accordion, AccordionItem
-from kivy.uix.carousel import Carousel
 from kivy.uix.screenmanager import ScreenManager, Screen, RiseInTransition, FallOutTransition
 
 #Widgets
@@ -140,15 +138,14 @@ class CfgAlarmsPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         super(CfgAlarmsPanel, self).__init__(**kwargs)
         self.cols = 1
         self.spacing = 15
+        self.config = StetsonHomeAutomation.main.ShaLocalConfig()
 
         self.labelTitle = Label(text="Configuration -- Alarms", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)
         self.labelAudible = Label(text="Audible", size_hint=(.4, .2))
         self.labelLed = Label(text="LED", size_hint=(.4, .2))
         self.labelVisual = Label(text="Visual", size_hint=(.4, .2))
-        self.swAudible = Switch(active=True)
-        self.swLed = Switch(active=False)
-        self.swVisual = Switch(active=True)
+        self._setStates()
         self.btnBack = Button(text="Back", size_hint=(.4, .1))
 
         self.add_widget(self.labelTitle)
@@ -163,12 +160,33 @@ class CfgAlarmsPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.add_widget(self.btnBack)
 
         #Connections
+        self.swAudible.bind(active=partial(self.switchState, 'audible'))
+        self.swLed.bind(active=partial(self.switchState, 'led'))
+        self.swVisual.bind(active=partial(self.switchState, 'visual'))
         self.btnBack.bind(on_press=self.goBack)
+
+    def _setStates(self):
+        if self.config.data['alarms']['audible']:
+            self.swAudible = Switch(active=True)
+        else:
+            self.swAudible = Switch(active=False)
+        if self.config.data['alarms']['led']:
+            self.swLed = Switch(active=True)
+        else:
+            self.swLed = Switch(active=False)
+        if self.config.data['alarms']['visual']:
+            self.swVisual = Switch(active=True)
+        else:
+            self.swVisual = Switch(active=False)
 
     def goBack(self, instance):
         self.parent.manager.transition = FallOutTransition()
         self.parent.manager.current = "configScreen"
         self.parent.manager.transition = RiseInTransition()
+
+    def switchState(self, keyname, instance, value):
+        self.config.data['alarms'][keyname] = value
+        self.config.write()
 
 
 class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
@@ -177,8 +195,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.cols = 1
         self.dirty = False
         self.spacing = 15
-        global StetsonHomeAutomation.globals.LOCAL_CONFIG
-        self.localConfig = StetsonHomeAutomation.globals.LOCAL_CONFIG
+        self.localConfig = StetsonHomeAutomation.main.ShaLocalConfig()
 
         self.labelTitle = Label(text="Configuration -- Panes", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)

@@ -8,6 +8,7 @@ import requests
 
 # StetsonHomeAutomation imports
 sys.path.insert(0, '..')
+import StetsonHomeAutomation.globals
 import StetsonHomeAutomation.widgets
 
 # Kivy imports
@@ -26,8 +27,6 @@ from kivy.uix.colorpicker import ColorPicker
 # =============================================================================
 # Globals
 # =============================================================================
-STATUS_BAR = Label(text="Problem detected.", size_hint=(1, .1))
-WEBROOT = "http://localhost:8082/"
 
 # =============================================================================
 # Functions
@@ -54,12 +53,14 @@ class LightStateTracker(object):
         self.lights = []
         self.activeLights = []
         self.allGroups = {}
+        self.scenes = []
+        self.webroot = StetsonHomeAutomation.globals.WEBROOT
         self.LoadInitialLightStates()
 
     def LoadInitialLightStates(self):
         # Lights/Groups
         try:
-            response = requests.get(WEBROOT+"get/lifx/lights/all")
+            response = requests.get(self.webroot+"get/lifx/lights/all")
             if response.status_code == requests.codes.ok:
                 self.lights = response.json()
             else:
@@ -79,7 +80,7 @@ class LightStateTracker(object):
 
         # Scenes
         try:
-            self.scenes = requests.get(WEBROOT+"get/lifx/scenes").json()
+            self.scenes = requests.get(self.webroot+"get/lifx/scenes").json()
         except requests.exceptions.ConnectionError:
             self.caller.statusBar.text = "Error connecting to server.!"
 
@@ -104,6 +105,7 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         self.tracker = LightStateTracker(caller)
         self.caller = caller
         self.statusBar = caller.statusBar
+        self.webroot = StetsonHomeAutomation.globals.WEBROOT
 
         self.orientation = "vertical"
 
@@ -207,7 +209,7 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
     def handleLightPressed(self, instance):
         #Query State
         try:
-            url = WEBROOT+"get/lifx/lights/id/{}".format(instance.id)
+            url = self.webroot+"get/lifx/lights/id/{}".format(instance.id)
             responseQuery = requests.get(url)
             responseQueryData = responseQuery.json()
             light = responseQueryData[0]
@@ -229,16 +231,20 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
             data = {
                 'power': newPower,
              }
-            url = WEBROOT+'set/lifx/lights/id:{}/state'.format(instance.id)
+            url = self.webroot+'set/lifx/lights/id:{}/state'.format(instance.id)
             response = requests.put(url, params=data)
         except requests.exceptions.ConnectionError:
             self.statusBar.text = "Error connecting to server."
 
     def handleGroupPressed(self, instance):
         #Query State
-        urlQuery = WEBROOT + 'get/lifx/location'
-        responseQuery = requests.get(urlQuery, headers=HEADERS)
-        responseQueryData = responseQuery.json()
+        urlQuery = self.webroot+'get/lifx/location'
+        try:
+            responseQuery = requests.get(urlQuery)
+            responseQueryData = responseQuery.json()
+        except requests.exceptions.ConnectionError:
+            self.statusBar.text = 'Error connecting to server.'
+            return
 
         anythingOn = False
         for light in responseQueryData:
@@ -266,8 +272,11 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         data = {
             'power': newPower,
          }
-        url = WEBROOT + 'set/lifx/location/state'
-        response = requests.put(url, data=data, headers=HEADERS)
+        try:
+            url = self.webroot+'set/lifx/location/state'
+            response = requests.put(url, data=data)
+        except requests.exceptions.ConnectionError:
+            self.statusBar.text = 'Error connecting to server.'
 
     def handleScenePressed(self, instance):
         pass
