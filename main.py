@@ -3,6 +3,7 @@
 #  =============================================================================
 # stdlib
 import json
+import os
 import requests
 import sys
 
@@ -10,6 +11,7 @@ import sys
 sys.path.insert(0, '..')
 import StetsonHomeAutomation.audio
 import StetsonHomeAutomation.config
+import StetsonHomeAutomation.globals
 import StetsonHomeAutomation.lights
 import StetsonHomeAutomation.widgets
 
@@ -40,11 +42,6 @@ from kivy.uix.button import Button
 # =============================================================================
 # Globals
 # =============================================================================
-STATUS_BAR = Label(text="Problem detected.", size_hint=(1, .1))
-ACTIVE_AUDIO_IN = []
-ACTIVE_AUDIO_OUT = []
-WEBROOT = "http://localhost:8082/"
-
 
 # =============================================================================
 # Functions
@@ -63,7 +60,9 @@ class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
 class CarouselInterface(Carousel):
     def __init__(self, **kwargs):
         super(CarouselInterface, self).__init__(**kwargs)
-        self.statusBar = STATUS_BAR
+        global StetsonHomeAutomation.globals.LOCAL_CONFIG
+        self.localConfig = StetsonHomeAutomation.globals.LOCAL_CONFIG
+        self.statusBar = StetsonHomeAutomation.globals.STATUS_BAR
 
         #Widgets
         self.audioPanel = StetsonHomeAutomation.audio.AudioPanel(self)
@@ -73,9 +72,12 @@ class CarouselInterface(Carousel):
 
         #Layouts
         self.add_widget(self.configPanel)
-        self.add_widget(self.audioPanel)
-        self.add_widget(self.lightPanel)
-        self.add_widget(MessagingPanel())
+        if self.localConfig.data['panes']['audio']:
+            self.add_widget(self.audioPanel)
+        if self.localConfig.data['panes']['lights']:
+            self.add_widget(self.lightPanel)
+        if self.localConfig.data['panes']['messaging']:
+            self.add_widget(MessagingPanel())
         self.index = 1
         self.configPanel.current = "configSplash"
 
@@ -96,9 +98,9 @@ class CarouselInterface(Carousel):
 class MainDisplay(GridLayout):
     def __init__(self):
         super(MainDisplay, self).__init__()
-        STATUS_BAR.text="Stetson House - (XM Radio : Kitchen, Family Room, Back Yard)"
+        StetsonHomeAutomation.globals.STATUS_BAR.text="Stetson House - (XM Radio : Kitchen, Family Room, Back Yard)"
         self.cols = 1
-        self.add_widget(STATUS_BAR)
+        self.add_widget(StetsonHomeAutomation.globals.STATUS_BAR)
         self.add_widget(CarouselInterface())
 
 

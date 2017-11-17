@@ -177,7 +177,6 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
 
         # Individual Lights
         for light in self.tracker.lights:
-            print("ALLEN -> {}\n\n{}".format(self.tracker.lights, light))
             _btn_layout = BoxLayout(orientation='vertical')
             btn = StetsonHomeAutomation.widgets.ImageButton()
             btn.text = light['label']
