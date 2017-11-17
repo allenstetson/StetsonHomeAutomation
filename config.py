@@ -18,6 +18,7 @@ sys.path.insert(0, '..')
 import StetsonHomeAutomation.main
 import StetsonHomeAutomation.widgets
 
+from kivy.app import App
 from kivy.config import Config
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
@@ -195,7 +196,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.cols = 1
         self.dirty = False
         self.spacing = 15
-        self.localConfig = StetsonHomeAutomation.main.ShaLocalConfig()
+        self.config = StetsonHomeAutomation.main.ShaLocalConfig()
 
         self.labelTitle = Label(text="Configuration -- Panes", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)
@@ -226,9 +227,9 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.add_widget(self.btnBack)
 
         #Connections
-        self.swAudible.bind(active=partial(self.switchState, 'audible'))
+        self.swAudio.bind(active=partial(self.switchState, 'audio'))
         self.swExtras.bind(active=partial(self.switchState, 'extras'))
-        self.swGames.bind(active=partial(self.switchState, 'games'))
+        self.swGames.bind(active=partial(self.switchState, 'extras:games'))
         self.swIntercom.bind(active=partial(self.switchState, 'intercom'))
         self.swLights.bind(active=partial(self.switchState, 'lights'))
         self.swMessaging.bind(active=partial(self.switchState, 'messaging'))
@@ -243,7 +244,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
             self.swExtras = Switch(active=True)
         else:
             self.swExtras = Switch(active=False)
-        if self.config.data['panes']['games']:
+        if self.config.data['panes']['extras:games']:
             self.swGames = Switch(active=True)
         else:
             self.swGames = Switch(active=False)
@@ -268,7 +269,8 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def switchState(self, keyname, instance, value):
         self.config.data['panes'][keyname] = value
         self.config.write()
-        self.parent.parent.updatePanes()
+        app = App.get_running_app()
+        app.root.carousel.updatePanes()
 
 
 class CfgSystemPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):

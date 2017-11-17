@@ -130,15 +130,27 @@ class CarouselInterface(Carousel):
 
     def updatePanes(self):
         if self.localConfig.data['panes']['audio']:
-            self.add_widget(self.audioPanel)
+            try:
+                self.add_widget(self.audioPanel)
+            except kivy.uix.widget.WidgetException:
+                #already added
+                pass
         else:
             self.remove_widget(self.audioPanel)
         if self.localConfig.data['panes']['lights']:
-            self.add_widget(self.lightPanel)
+            try:
+                self.add_widget(self.lightPanel)
+            except kivy.uix.widget.WidgetException:
+                #already added
+                pass
         else:
             self.remove_widget(self.lightPanel)
         if self.localConfig.data['panes']['messaging']:
-            self.add_widget(MessagingPanel())
+            try:
+                self.add_widget(MessagingPanel())
+            except kivy.uix.widget.WidgetException:
+                #already added
+                pass
         else:
             self.remove_widget((MessagingPanel))
 
@@ -162,8 +174,9 @@ class MainDisplay(GridLayout):
         #global StetsonHomeAutomation.globals.STATUS_BAR
         StetsonHomeAutomation.globals.STATUS_BAR.text="Stetson House - (XM Radio : Kitchen, Family Room, Back Yard)"
         self.cols = 1
+        self.carousel = CarouselInterface()
         self.add_widget(StetsonHomeAutomation.globals.STATUS_BAR)
-        self.add_widget(CarouselInterface())
+        self.add_widget(self.carousel)
 
 
 class ParentalSettingsScreen(Screen):
