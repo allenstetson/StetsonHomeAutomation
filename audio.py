@@ -471,8 +471,10 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
     # -------------------------------------------------------------------------
     def getCurrentAudioIn(self):
         try:
-            response = requests.get(WEBROOT + "get/receiver/source/")
+            response = requests.get(WEBROOT + "get/receiver/source")
             responseData = json.loads(response.content)[0]
+            if not responseData['success']:
+                print("ERROR: Failed in determining current receiver source. Defaulting to none!")
             for button in self.allAudioSrcBtns:
                 if responseData['data'] == button.id:
                     button.color = [1, 1, 1, 1]
@@ -486,9 +488,12 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
 
     def getCurrentPowerState(self):
         try:
-            response = requests.get(WEBROOT + "get/receiver/power/")
+            response = requests.get(WEBROOT + "get/receiver/power")
             responseData = json.loads(response.content)[0]
-            if responseData['data'] == "on":
+            if not responseData['success']:
+                print("ERROR: Failed in determining receiver power state. Defaulting to 'On'!")
+                self.isAudioPowerOn = True
+            elif responseData['data'] == "on":
                 self.isAudioPowerOn = True
             elif responseData['data'] == "off":
                 self.isAudioPowerOn = False
