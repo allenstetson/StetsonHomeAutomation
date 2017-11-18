@@ -278,18 +278,15 @@ class CfgSystemPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         super(CfgSystemPanel, self).__init__(**kwargs)
         self.cols = 1
         self.spacing = 15
+        self.hostname = StetsonHomeAutomation.globals.HOSTNAME
 
         self.labelTitle = Label(text="Configuration -- System", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)
         self.labelHost = Label(text="Host Name", size_hint=(.4, .2))
-        hostname = os.environ['COMPUTERNAME']
+        hostname = self.hostname
         self.valueHost = Label(text=hostname, size_hint=(.4, .2))
         self.labelIp = Label(text="IP Address", size_hint=(.4, .2))
-        output = subprocess.run('ipconfig', check=True, stdout=subprocess.PIPE)
-        ipAddr = "Unknown"
-        for line in output.stdout.split(b"\n"):
-            if b'IPv4' in line:
-                ipAddr = str(line).split(":")[1].strip().replace("\\r'", "")
+        ipAddr = StetsonHomeAutomation.globals.IP_ADDR
         self.valueIp = Label(text=ipAddr, size_hint=(.4, .2))
         self.btnBack = Button(text="Back", size_hint=(.4, .1))
 
