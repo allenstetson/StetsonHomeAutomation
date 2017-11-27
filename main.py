@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, '..')
 import StetsonHomeAutomation.audio
 import StetsonHomeAutomation.config
+import StetsonHomeAutomation.extras
 import StetsonHomeAutomation.globals
 import StetsonHomeAutomation.lights
 import StetsonHomeAutomation.widgets
@@ -60,6 +61,7 @@ class CarouselInterface(Carousel):
         self.configPanel = StetsonHomeAutomation.config.ConfigScreenManager(
             transition=RiseInTransition())
         self.lightPanel = StetsonHomeAutomation.lights.LightPanel(self)
+        self.extrasPanel = StetsonHomeAutomation.extras.ExtrasPanel(self)
 
         #Layouts
         self.add_widget(self.configPanel)
@@ -92,6 +94,7 @@ class CarouselInterface(Carousel):
                 pass
         else:
             self.remove_widget((MessagingPanel))
+        self.add_widget(self.extrasPanel)
 
 
     def on_index(self, inst, pos):
