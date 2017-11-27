@@ -33,6 +33,7 @@ import sys
 # StetsonHomeAutomation imports
 sys.path.insert(0, '..')
 import StetsonHomeAutomation.widgets
+import StetsonHomeAutomation.main
 
 # Kivy imports
 import kivy
@@ -71,6 +72,7 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         self.allAudioOutBtns = []
         self.activeAudioOutBtns = []
         self.activeAudioIn = None
+        self.config = StetsonHomeAutomation.config.ShaLocalConfig()
 
         self.orientation = "vertical"
         item = AccordionItem(title="Presets")
@@ -86,10 +88,12 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         self._makeOutputsPanel()
         self.add_widget(self.accordianOutputs)
 
+        #Intercom
         item = AccordionItem(title="Intercom")
         item.add_widget(Button(text="Push to Talk", background_color=[0,.35,.7,1]))
         item.collapse = True
-        self.add_widget(item)
+        if self.config.data['panes']['intercom']:
+            self.add_widget(item)
         self.accordianInputs.collapse = False
 
         self._loadInitialStates()
