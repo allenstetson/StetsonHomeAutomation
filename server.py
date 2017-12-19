@@ -12,7 +12,10 @@ from threading import Thread
 #==============================================================================
 # Globals
 #==============================================================================
-with open('c:/Users/allen/lifxToken.txt', 'r') as fh:
+lifxTokenPath = 'c:/Users/allen/lifxToken.txt'
+if not os.path.exists(lifxTokenPath):
+    lifxTokenPath = '/home/pi/allen/lifxToken.txt'
+with open(lifxTokenPath, 'r') as fh:
     _token = fh.read()
 LIFX_TOKEN = _token.strip()
 
