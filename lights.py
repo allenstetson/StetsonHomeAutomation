@@ -164,6 +164,8 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
 
         ## LIGHTS
         self.accordianLights = AccordionItem(title="Lights")
+        lightButtonPanel = BoxLayout(orientation='vertical')
+        rowOne = BoxLayout(orientation='horizontal')
         self.allLightButtons = list()
 
         # Whole House
@@ -175,10 +177,19 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         btn.bind(on_press=self.handleGroupPressed)
         _btn_layout.add_widget(btn)
         _btn_layout.add_widget(Label(text=btn.text))
-        self.accordianLights.add_widget(_btn_layout)
+        rowOne.add_widget(_btn_layout)
 
         # Individual Lights
+        currentRow = rowOne
+        i = 0
         for light in self.tracker.lights:
+            i += 1
+            print("Light {}".format(i))
+            if len(currentRow.children) >= 4:
+                lightButtonPanel.add_widget(currentRow)
+                print("Adding New Row")
+                currentRow = BoxLayout(orientation='horizontal')
+
             _btn_layout = BoxLayout(orientation='vertical')
             btn = StetsonHomeAutomation.widgets.ImageButton()
             btn.text = light['label']
@@ -189,8 +200,10 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
             self.allLightButtons.append(btn)
             _btn_layout.add_widget(btn)
             _btn_layout.add_widget(Label(text=btn.text))
-            self.accordianLights.add_widget(_btn_layout)
+            currentRow.add_widget(_btn_layout)
 
+        lightButtonPanel.add_widget(currentRow)
+        self.accordianLights.add_widget(lightButtonPanel)
         self.add_widget(self.accordianLights)
 
         item = AccordionItem(title="Schedules")
@@ -204,7 +217,7 @@ class LightPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
         #item.add_widget(Button(text="LvgRoomOff", background_color=[0,.35,.7,1]))
         self.add_widget(item)
         self.page = 1
-        self.groups.collapse = False
+        self.accordianLights.collapse = False
 
     def handleLightPressed(self, instance):
         #Query State
