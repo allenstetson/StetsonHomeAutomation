@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, '..')
 import StetsonHomeAutomation.audio
 import StetsonHomeAutomation.config
+import StetsonHomeAutomation.extras
 import StetsonHomeAutomation.globals
 import StetsonHomeAutomation.lights
 import StetsonHomeAutomation.widgets
@@ -41,67 +42,6 @@ from kivy.uix.label import Label
 # =============================================================================
 # Classes
 # =============================================================================
-class ShaLocalConfig(object):
-    class __ShaLocalConfig:
-        def __init__(self):
-            #global StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
-            self.configPath = StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
-            self.data = {}
-            self.getOrCreateConfig()
-
-        def getOrCreateConfig(self):
-            if not os.path.exists(self.configPath):
-                settings = self.generateDefaults()
-                self.data = settings
-                self.write()
-            else:
-                self.read()
-
-        def read(self):
-            with open(self.configPath, 'r') as fh:
-                self.data = json.loads(fh.read())
-
-        def write(self):
-            with open(self.configPath, 'w') as fh:
-                fh.write(json.dumps(self.data))
-
-        def generateDefaults(self):
-            data = {
-                'alarms': {
-                    'audible': True,
-                    'led': False,
-                    'visual': True
-                },
-                'panes': {
-                    'audio': True,
-                    'audio:presets': True,
-                    'audio:inputs': True,
-                    'audio:outputs': True,
-                    'intercom': True,
-                    'lights': True,
-                    'lights:groups': True,
-                    'lights:scenes': True,
-                    'lights:lights': True,
-                    'lights:schedules': True,
-                    'messaging': True,
-                    'extras': True,
-                    'extras:games': True,
-                }
-            }
-            return data
-
-    instance = None
-    def __init__(self):
-        if not ShaLocalConfig.instance:
-            ShaLocalConfig.instance = ShaLocalConfig.__ShaLocalConfig()
-
-    def __getattr__(self, name):
-        return getattr(self.instance, name)
-
-    def __setattr__(self, key, value):
-        setattr(self.instance, key, value)
-
-
 class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
         super(MessagingPanel, self).__init__(**kwargs)
@@ -112,7 +52,7 @@ class MessagingPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
 class CarouselInterface(Carousel):
     def __init__(self, **kwargs):
         super(CarouselInterface, self).__init__(**kwargs)
-        self.localConfig = ShaLocalConfig()
+        self.localConfig = StetsonHomeAutomation.config.ShaLocalConfig()
         #global StetsonHomeAutomation.globals.STATUS_BAR
         self.statusBar = StetsonHomeAutomation.globals.STATUS_BAR
 
@@ -121,6 +61,7 @@ class CarouselInterface(Carousel):
         self.configPanel = StetsonHomeAutomation.config.ConfigScreenManager(
             transition=RiseInTransition())
         self.lightPanel = StetsonHomeAutomation.lights.LightPanel(self)
+        self.extrasPanel = StetsonHomeAutomation.extras.ExtrasPanel(self)
 
         #Layouts
         self.add_widget(self.configPanel)
@@ -153,6 +94,7 @@ class CarouselInterface(Carousel):
                 pass
         else:
             self.remove_widget((MessagingPanel))
+        self.add_widget(self.extrasPanel)
 
 
     def on_index(self, inst, pos):

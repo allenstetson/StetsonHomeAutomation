@@ -8,8 +8,12 @@ Structure
 
 Keypad in C:\Python36\lib\site-packages\kivy\data
 """
-from functools import partial
+#==============================================================================
+# Imports
+#==============================================================================
+import json
 import os
+from functools import partial
 import subprocess
 import sys
 
@@ -33,6 +37,70 @@ from kivy.uix.label import Label
 from kivy.uix.switch import Switch
 from kivy.uix.textinput import TextInput
 
+#==============================================================================
+# Classes
+#==============================================================================
+class ShaLocalConfig(object):
+    class __ShaLocalConfig:
+        def __init__(self):
+            #global StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
+            self.configPath = StetsonHomeAutomation.globals.LOCAL_CONFIG_PATH
+            self.data = {}
+            self.getOrCreateConfig()
+
+        def getOrCreateConfig(self):
+            if not os.path.exists(self.configPath):
+                settings = self.generateDefaults()
+                self.data = settings
+                self.write()
+            else:
+                self.read()
+
+        def read(self):
+            with open(self.configPath, 'r') as fh:
+                self.data = json.loads(fh.read())
+
+        def write(self):
+            with open(self.configPath, 'w') as fh:
+                fh.write(json.dumps(self.data))
+
+        def generateDefaults(self):
+            data = {
+                'alarms': {
+                    'audible': True,
+                    'led': False,
+                    'visual': True
+                },
+                'panes': {
+                    'audio': True,
+                    'audio:presets': True,
+                    'audio:inputs': True,
+                    'audio:outputs': True,
+                    'intercom': True,
+                    'lights': True,
+                    'lights:groups': True,
+                    'lights:scenes': True,
+                    'lights:lights': True,
+                    'lights:schedules': True,
+                    'messaging': True,
+                    'extras': True,
+                    'extras:games': True,
+                }
+            }
+            return data
+
+    instance = None
+    def __init__(self):
+        if not ShaLocalConfig.instance:
+            ShaLocalConfig.instance = ShaLocalConfig.__ShaLocalConfig()
+
+    def __getattr__(self, name):
+        return getattr(self.instance, name)
+
+    def __setattr__(self, key, value):
+        setattr(self.instance, key, value)
+
+#==============================================================================
 
 class ConfigScreenManager(ScreenManager):
     def __init__(self, **kwargs):
@@ -78,6 +146,7 @@ class ConfigScreenManager(ScreenManager):
         elif instance.text == "Parental Controls":
             self.current = "parentalScreen"
 
+#==============================================================================
 
 class ConfigSplash(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
@@ -88,6 +157,7 @@ class ConfigSplash(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.add_widget(self.configBtn)
         self.add_widget(self.parentalBtn)
 
+#==============================================================================
 
 class ConfigPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
@@ -133,13 +203,14 @@ class ConfigPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         if instance.text == "System":
             self.parent.manager.current = "cfgSystem"
 
+#==============================================================================
 
 class CfgAlarmsPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
         super(CfgAlarmsPanel, self).__init__(**kwargs)
         self.cols = 1
         self.spacing = 15
-        self.config = StetsonHomeAutomation.main.ShaLocalConfig()
+        self.config = ShaLocalConfig()
 
         self.labelTitle = Label(text="Configuration -- Alarms", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)
@@ -189,6 +260,7 @@ class CfgAlarmsPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.config.data['alarms'][keyname] = value
         self.config.write()
 
+#==============================================================================
 
 class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
@@ -196,7 +268,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.cols = 1
         self.dirty = False
         self.spacing = 15
-        self.config = StetsonHomeAutomation.main.ShaLocalConfig()
+        self.config = ShaLocalConfig()
 
         self.labelTitle = Label(text="Configuration -- Panes", size_hint=(.4, .2))
         _subLayout = GridLayout(cols=2)
@@ -272,6 +344,7 @@ class CfgPanesPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         app = App.get_running_app()
         app.root.carousel.updatePanes()
 
+#==============================================================================
 
 class CfgSystemPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
@@ -307,6 +380,7 @@ class CfgSystemPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.parent.manager.current = "configScreen"
         self.parent.manager.transition = RiseInTransition()
 
+#==============================================================================
 
 class LoginScreen(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
@@ -334,6 +408,7 @@ class LoginScreen(StetsonHomeAutomation.widgets.GridLayoutWithBg):
         self.parent.manager.current = "configSplash"
         self.parent.manager.transition = RiseInTransition()
 
+#==============================================================================
 
 class ParentalControlsPanel(StetsonHomeAutomation.widgets.GridLayoutWithBg):
     def __init__(self, **kwargs):
