@@ -193,5 +193,7 @@ class ShaApp(App):
 
 # =============================================================================
 if __name__ == "__main__":
+    #from kivy.core.window import Window
+    #Window.fullscreen = True
     app = ShaApp()
     app.run()

@@ -489,7 +489,7 @@ class AudioPanel(StetsonHomeAutomation.widgets.AccordionWithBg):
     def getCurrentPowerState(self):
         try:
             response = requests.get(WEBROOT + "get/receiver/power")
-            responseData = json.loads(response.content)[0]
+            responseData = json.loads(response.content.decode('utf-8'))[0]
             if not responseData['success']:
                 print("ERROR: Failed in determining receiver power state. Defaulting to 'On'!")
                 self.isAudioPowerOn = True
