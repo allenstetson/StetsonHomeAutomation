@@ -21,7 +21,7 @@ LIFX_TOKEN = _token.strip()
 
 CONFIG_PATH = "./.sha.config"
 HEADERS = {"Authorization": "Bearer %s" % LIFX_TOKEN}
-HOME_LOCATION = "Grammy"
+HOME_LOCATION = "Brandon"
 SHA_CONFIG = None
 
 try:
@@ -62,7 +62,8 @@ def getLifxLightsAll():
 @bottle.route('/get/lifx/lights/id/<lightId>')
 def getLifxLightsById(lightId):
     #urlQuery = 'https://api.lifx.com/v1/lights/id:{}'.format(lightId)
-    for light in getLifxLightsAll():
+    for light in SHA_CONFIG.get("lights"):
+        print("light: {}".format(light))
         if light['id'] == lightId:
             return json.dumps(light)
 
@@ -236,6 +237,7 @@ def updateShaConfig():
         raise(NetworkError,
               "Failed to retrieve LIFX data from network:\n{}\n{}\n{}".format(lights, scenes, location))
     SHA_CONFIG.set("lights", lights.json())
+    #print("Setting lights to {}".format(lights.json()))
     SHA_CONFIG.set("scenes", scenes.json())
     SHA_CONFIG.set("location", scenes.json())
     SHA_CONFIG.writeData()
@@ -268,7 +270,7 @@ class ShaConfig(object):
 
     def readData(self):
         with open(CONFIG_PATH, "r") as fh:
-            data = json.loads(fh.read())
+            data = json.load(fh)
         return data
 
     def writeData(self):
@@ -279,6 +281,7 @@ class ShaConfig(object):
         if not attr in self.data:
             return None
         else:
+            print("{} type: {}".format(attr, type(attr)))
             return self.data[attr]
 
     def set(self, attr, value):
