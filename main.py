@@ -66,7 +66,7 @@ class CarouselInterface(Carousel):
         #Layouts
         self.add_widget(self.configPanel)
         self.updatePanes()
-        self.index = 1
+        self.index = 2
         self.configPanel.current = "configSplash"
 
     def updatePanes(self):
