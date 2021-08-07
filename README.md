@@ -3,6 +3,8 @@ Home automation (lights, audio, etc) for the Stetson household.
 
 :warning: Abandonware! :warning:
 
+* [Statement to Potential Employers](#statement-to-potential-employers)
+
 This repo contains the half-finished abandonware attempt at creating a touch-sensitive panel for interacting with various smart home devices in the house.
 This was largely abandoned due to issues with the hardware at the house with which this interfaces. 
 
@@ -19,8 +21,9 @@ The kivy UI did work quite handsomely on the PC, but stuttered quite a bit on th
 
 I hestitate to drop this repo from my github in case I ever come back to it in my free time, especially now that Kivy has matured.  My guess is that, if I ever did pick this up, I'd likely use PyQt since I am so familiar with it and it is supported on so many platforms, but kivy does have its appeal particularly in the realm of mobile.
 
-I also hesitate to leave this in my github repo for fear that it will reflect poorly on my ability to write code, but decided that I'll reconcile that fear with this
-*STATEMENT TO POTENTIAL EMPLOYERS*:
+I also hesitate to leave this in my github repo for fear that it will reflect poorly on my ability to write code, but decided that I'll reconcile that fear with this:
+
+## STATEMENT TO POTENTIAL EMPLOYERS
 
 This code is in an infantile stage and does not represent my best work. While somewhat functional, it is by no means my best attempt to make something usable, readable, pretty, or representative of my skill.
 
